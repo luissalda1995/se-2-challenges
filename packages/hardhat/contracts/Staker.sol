@@ -61,7 +61,7 @@ contract Staker {
 
   // After some `deadline` allow anyone to call an `execute()` function
   //  It should either call `exampleExternalContract.complete{value: address(this).balance}()` to send all the value
-  function execute() public stakingNotCompleted {
+  function execute() public stakingNotCompleted deadlinePassed(true){
     uint256 contractBalance = address(this).balance;
     if (contractBalance >= threshold) {
       // if the `threshold` is met, send the balance to the externalContract
@@ -75,7 +75,7 @@ contract Staker {
 
 
   // Add a `withdraw(address payable)` function lets users withdraw their balance
-  function withdraw(address payable _to) public deadlinePassed(true) stakingNotCompleted {
+  function withdraw() public deadlinePassed(true) stakingNotCompleted {
       // check the amount staked did not reach the threshold by the deadline
       require(openForWithdraw, "Not open for withdraw");
 
@@ -89,7 +89,7 @@ contract Staker {
       balances[msg.sender] = 0;
 
       // transfer sender's balance to the `_to` address
-      (bool sent, ) = _to.call{value: userBalance}("");
+      (bool sent, ) = payable(msg.sender).call{value: userBalance}("");
 
       // check transfer was successful
       require(sent, "Failed to send to address");
